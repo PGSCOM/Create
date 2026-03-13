@@ -29,10 +29,6 @@ jobs:
       - name: Build
         run: ./gradlew build
 
-      - name: Run Gametests
-        if: ${{ !inputs.is-release }}
-        run: ./gradlew runGameTestServer
-
       - name: Publish
         if: ${{ inputs.is-release }}
         # Subimos el/los JARs generados en build/libs como artifact en vez de publicar
@@ -40,3 +36,7 @@ jobs:
         with:
           name: built-jars
           path: build/libs/*.jar
+
+      - name: Run Gametests
+        if: ${{ !inputs.is-release }}
+        run: ./gradlew runGameTestServer
