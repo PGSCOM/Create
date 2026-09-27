@@ -12,8 +12,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import com.simibubi.create.compat.Mods;
-
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -22,9 +20,10 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
 import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
-import com.simibubi.create.compat.computercraft.events.StationTrainPresenceEvent;
+import com.simibubi.create.compat.Mods;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
+import com.simibubi.create.compat.computercraft.events.StationTrainPresenceEvent;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.decoration.slidingDoor.DoorControlBehaviour;
@@ -136,16 +135,16 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 
 	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
 		event.registerBlockEntity(
-				Capabilities.ItemHandler.BLOCK,
-				AllBlockEntityTypes.TRACK_STATION.get(),
-				(be, context) -> be.depotBehaviour.itemHandler
+			Capabilities.ItemHandler.BLOCK,
+			AllBlockEntityTypes.TRACK_STATION.get(),
+			(be, context) -> be.depotBehaviour.itemHandler
 		);
 
 		if (Mods.COMPUTERCRAFT.isLoaded()) {
 			event.registerBlockEntity(
-					PeripheralCapability.get(),
-					AllBlockEntityTypes.TRACK_STATION.get(),
-					(be, context) -> be.computerBehaviour.getPeripheralCapability()
+				PeripheralCapability.get(),
+				AllBlockEntityTypes.TRACK_STATION.get(),
+				(be, context) -> be.computerBehaviour.getPeripheralCapability()
 			);
 		}
 	}
@@ -287,17 +286,20 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 		}
 
 		if (!level.isClientSide && computerBehaviour.hasAttachedComputer()) {
-			if (this.imminentTrain == null && imminentTrain != null)
+			if (this.imminentTrain == null && imminentTrain != null) {
 				computerBehaviour.prepareComputerEvent(
-						new StationTrainPresenceEvent(StationTrainPresenceEvent.Type.IMMINENT, imminentTrain));
+					new StationTrainPresenceEvent(StationTrainPresenceEvent.Type.IMMINENT, imminentTrain));
+			}
 			if (newlyArrived) {
-				if (trainPresent)
+				if (trainPresent) {
 					computerBehaviour.prepareComputerEvent(
-							new StationTrainPresenceEvent(StationTrainPresenceEvent.Type.ARRIVAL, imminentTrain));
-				else
-					computerBehaviour.prepareComputerEvent(
-							new StationTrainPresenceEvent(StationTrainPresenceEvent.Type.DEPARTURE,
-									Create.RAILWAYS.trains.get(this.imminentTrain)));
+						new StationTrainPresenceEvent(StationTrainPresenceEvent.Type.ARRIVAL, imminentTrain));
+				} else {
+					Train train = Create.RAILWAYS.trains.get(this.imminentTrain);
+					if (train != null)
+						computerBehaviour.prepareComputerEvent(
+							new StationTrainPresenceEvent(StationTrainPresenceEvent.Type.DEPARTURE, train));
+				}
 			}
 		}
 
@@ -559,11 +561,10 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 
 		BlockPos bogeyOffset = BlockPos.containing(track.getUpNormal(level, targetPosition, trackState));
 
-		int MAX_LENGTH = AllConfigs.server().trains.maxAssemblyLength.get();
-		int MAX_BOGEY_COUNT = AllConfigs.server().trains.maxBogeyCount.get();
+		int maxLength = AllConfigs.server().trains.maxAssemblyLength.get();
+		int maxBogeyCount = AllConfigs.server().trains.maxBogeyCount.get();
 
 		int bogeyIndex = 0;
-		int maxBogeyCount = MAX_BOGEY_COUNT;
 		if (bogeyLocations == null)
 			bogeyLocations = new int[maxBogeyCount];
 		if (bogeyTypes == null)
@@ -574,8 +575,8 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
 		Arrays.fill(bogeyTypes, null);
 		Arrays.fill(upsideDownBogeys, false);
 
-		for (int i = 0; i < MAX_LENGTH; i++) {
-			if (i == MAX_LENGTH - 1) {
+		for (int i = 0; i < maxLength; i++) {
+			if (i == maxLength - 1) {
 				assemblyLength = i;
 				break;
 			}

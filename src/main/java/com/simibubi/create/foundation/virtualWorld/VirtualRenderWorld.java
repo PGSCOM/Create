@@ -80,7 +80,7 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 
 	public VirtualRenderWorld(Level level, int minBuildHeight, int height, Vec3i biomeOffset, Runnable onBlockUpdated) {
 		super((WritableLevelData) level.getLevelData(), level.dimension(), level.registryAccess(), level.dimensionTypeRegistration(), level.getProfilerSupplier(),
-				true, false, 0, 0);
+			true, false, 0, 0);
 		this.level = level;
 		this.minBuildHeight = nextMultipleOf16(minBuildHeight);
 		this.height = nextMultipleOf16(height);
@@ -171,17 +171,13 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 	// MEANINGFUL OVERRIDES
 
 	@Override
-	public LevelChunk getChunk(int x, int z) {
-		throw new UnsupportedOperationException();
-	}
-
-	public ChunkAccess actuallyGetChunk(int x, int z) {
-		return getChunk(x, z, ChunkStatus.FULL);
+	public LevelChunk getChunk(int chunkX, int chunkZ) {
+		return (LevelChunk) getChunk(chunkX, chunkZ, ChunkStatus.FULL);
 	}
 
 	@Override
 	public ChunkAccess getChunk(BlockPos pos) {
-		return actuallyGetChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
+		return getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
 	}
 
 	@Override
@@ -269,7 +265,10 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 	@Override
 	public void removeBlockEntity(BlockPos pos) {
 		if (!isOutsideBuildHeight(pos)) {
-			blockEntities.remove(pos);
+			BlockEntity blockEntity = blockEntities.remove(pos);
+			if (blockEntity != null) {
+				blockEntity.setRemoved();
+			}
 		}
 	}
 
@@ -412,12 +411,12 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 
 	@Override
 	public void playSeededSound(Player player, double x, double y, double z, Holder<SoundEvent> soundEvent,
-			SoundSource soundSource, float volume, float pitch, long seed) {
+								SoundSource soundSource, float volume, float pitch, long seed) {
 	}
 
 	@Override
 	public void playSeededSound(Player player, Entity entity, Holder<SoundEvent> soundEvent, SoundSource soundSource,
-			float volume, float pitch, long seed) {
+								float volume, float pitch, long seed) {
 	}
 
 	@Override
@@ -443,7 +442,8 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel {
 	}
 
 	@Override
-	public void setMapData(MapId mapId, MapItemSavedData mapItemSavedData) {}
+	public void setMapData(MapId mapId, MapItemSavedData mapItemSavedData) {
+	}
 
 	@NotNull
 	@Override
